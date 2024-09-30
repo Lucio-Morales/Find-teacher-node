@@ -6,27 +6,15 @@ const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    // Definir el número de rondas de salt para bcrypt
     const saltRounds = 10;
-
-    // Hashear la contraseña usando bcrypt
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    if (role === 'profesor') {
-      const { data, error } = await supabase
-        .from('teachers')
-        .insert([{ name, email, password: hashedPassword, role }]) // Almacena la contraseña hasheada
-        .select();
-      if (error) throw error;
-      res.status(201).json({ message: 'Teacher created successfully', data });
-    } else {
-      const { data, error } = await supabase
-        .from('students')
-        .insert([{ name, email, password: hashedPassword, role }]) // Almacena la contraseña hasheada
-        .select();
-      if (error) throw error;
-      res.status(201).json({ message: 'Student created successfully', data });
-    }
+    const { data, error } = await supabase
+      .from('users')
+      .insert([{ name, email, password: hashedPassword, role }])
+      .select();
+    if (error) throw error;
+    res.status(201).json({ message: 'Teacher created successfully', data });
   } catch (error) {
     console.error('Error creating user:', error.message);
     res

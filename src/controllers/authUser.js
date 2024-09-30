@@ -7,10 +7,8 @@ const loginUser = async (req, res) => {
   const { email, password } = req.body;
 
   try {
-    // Buscar usuario en la base de datos
-    // ** MENSAJE PARA MI YO DEL FUTURO: ESTE LOGIN NO ES GENERICO PORQUE TENGO TABLAS STUDENTS Y TEACHERS POR SEPARADO. ARREGLARLO **
     const { data: user, error } = await supabase
-      .from('students')
+      .from('users')
       .select('id, email, password, role')
       .eq('email', email)
       .single();
