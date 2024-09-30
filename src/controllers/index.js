@@ -1,3 +1,4 @@
 module.exports = {
-  teacherControllers: require('./teacherControllers'),
+  userController: require('./userController'),
+  authUser: require('./authUser'),
 };
