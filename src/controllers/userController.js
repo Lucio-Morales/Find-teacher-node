@@ -1,5 +1,6 @@
 const supabase = require('../createClient');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 // REGISTRA UN NUEVO USUARIO
 const registerUser = async (req, res) => {
@@ -9,12 +10,41 @@ const registerUser = async (req, res) => {
     const saltRounds = 10;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    const { data, error } = await supabase
+    const { data: userData, error: userError } = await supabase
       .from('users')
       .insert([{ name, email, password: hashedPassword, role }])
       .select();
-    if (error) throw error;
-    res.status(201).json({ message: 'Teacher created successfully', data });
+
+    if (userError) throw userError;
+
+    user = userData[0];
+
+    const { data: profileData, error: profileError } = await supabase
+      .from('profile')
+      .insert([{ user_id: user.id }]);
+
+    if (profileError) throw profileError;
+
+    const token = jwt.sign(
+      {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' }
+    );
+    res.status(201).json({
+      message: 'User registered successfully',
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+      },
+    });
   } catch (error) {
     console.error('Error creating user:', error.message);
     res

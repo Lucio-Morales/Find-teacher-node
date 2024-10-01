@@ -9,11 +9,11 @@ const loginUser = async (req, res) => {
   try {
     const { data: user, error } = await supabase
       .from('users')
-      .select('id, email, password, role')
+      .select('*')
       .eq('email', email)
       .single();
 
-    if (error) {
+    if (!user || error) {
       return res.status(404).json({ message: 'User not found' });
     }
 
@@ -37,6 +37,10 @@ const loginUser = async (req, res) => {
     // Devolver el token al cliente
     return res.status(200).json({
       message: 'Login successful',
+      user: {
+        id: user.id,
+        role: user.role === 'estudiante' ? 'student' : 'teacher',
+      },
       token,
     });
   } catch (error) {
