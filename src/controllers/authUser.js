@@ -37,6 +37,7 @@ const loginUser = async (req, res) => {
     // Devolver el token al cliente
     return res.status(200).json({
       message: 'Login successful',
+      success: true,
       user: {
         id: user.id,
         role: user.role === 'estudiante' ? 'student' : 'teacher',

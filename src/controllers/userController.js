@@ -2,13 +2,12 @@ const supabase = require('../createClient');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 
-// REGISTRA UN NUEVO USUARIO
+// REGISTRA UN NUEVO USUARIO Y CREA SU PERFIL EN FUNCION DEL ROL
 const registerUser = async (req, res) => {
   const { name, email, password, role } = req.body;
 
   try {
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const { data: userData, error: userError } = await supabase
       .from('users')
@@ -17,12 +16,30 @@ const registerUser = async (req, res) => {
 
     if (userError) throw userError;
 
-    user = userData[0];
+    const user = userData[0];
 
-    const { data: profileData, error: profileError } = await supabase
-      .from('profile')
-      .insert([{ user_id: user.id }]);
+    let profileData, profileError;
 
+    if (role === 'estudiante') {
+      profileData = {
+        user_id: user.id,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
+      ({ data: profileData, error: profileError } = await supabase
+        .from('student_profile')
+        .insert([profileData]));
+    } else if (role === 'profesor') {
+      profileData = {
+        user_id: user.id,
+        created_at: new Date().toISOString,
+        updated_at: new Date().toISOString,
+      };
+      ({ data: profileData, error: profileError } = await supabase
+        .from('teacher_profile')
+        .insert([profileData]));
+    }
     if (profileError) throw profileError;
 
     const token = jwt.sign(
